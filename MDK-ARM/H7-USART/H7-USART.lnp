@@ -27,6 +27,7 @@
 "h7-usart\stm32h7xx_hal_uart_ex.o"
 "h7-usart\system_stm32h7xx.o"
 "h7-usart\bsp_usart.o"
+"h7-usart\bsp_judge.o"
 --library_type=microlib --strict --scatter "H7-USART\H7-USART.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

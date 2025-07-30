@@ -35,7 +35,8 @@ extern DataPoint dataStorage[DATA_POINTS];
 extern uint8_t storageIndex ;
 extern volatile uint8_t dmaComplete;
 extern uint8_t txValue;
-extern double volt[DATA_POINTS];
+extern float volt[DATA_POINTS];
+extern uint8_t contlV[11];
 
 // º¯ÊýÉùÃ÷
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);

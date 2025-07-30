@@ -24,26 +24,27 @@
 // 变量定义
 
  uint8_t txBuffer[11]; 
+  uint8_t contlV[11];
  uint8_t rxBuffer[7]; 
 volatile uint8_t dmaComplete = 0;
 DataPoint dataStorage[DATA_POINTS];
 uint8_t storageIndex = 0;
 uint8_t txValue;
-double volt[DATA_POINTS]={0};
+float volt[DATA_POINTS]={0};
 
 
 // 重定向
 int fputc(int ch,FILE *f)
 {
 //采用轮询方式发送1字节数据，超时时间设置为无限等待
-HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,HAL_MAX_DELAY);
+HAL_UART_Transmit(&huart8,(uint8_t *)&ch,1,HAL_MAX_DELAY);
 return ch;
 }
 int fgetc(FILE *f)
 {
 uint8_t ch;
 // 采用轮询方式接收 1字节数据，超时时间设置为无限等待
-HAL_UART_Receive( &huart1,(uint8_t*)&ch,1, HAL_MAX_DELAY );
+HAL_UART_Receive( &huart8,(uint8_t*)&ch,1, HAL_MAX_DELAY );
 return ch;
 }
 
@@ -72,10 +73,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 //}
 
 
+   		/*包头：0xAB
 
+字节1：类型 (0x00=幅值, 0x01=频率)
 
+字节2：通道号 (0x01=通道1, 0x02=通道2...)
 
+字节3：波形类型 (0x00=正弦波, 0x01=三角波)
 
+字节4：开始标志 0xCC
+
+字节5-7：幅度整数部分（24位大端序）
+
+字节8-9：幅度小数部分（16位大端序）
+				
+若为频率
+字节5-9：为40位整数位
+包尾：0xBA
+*/
 void build_packet(uint8_t type, uint8_t channel, uint8_t wave_type, 
                   double value, uint8_t packet[11]) 
 {

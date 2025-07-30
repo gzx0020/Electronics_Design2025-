@@ -49,7 +49,7 @@
 
 /* USER CODE BEGIN PV */
 
-
+ 
 
 
 /* USER CODE END PV */
@@ -99,24 +99,19 @@ int main(void)
   MX_UART8_Init();
   /* USER CODE BEGIN 2 */
     txValue = 100;
-    uint8_t type=0x01;
-    uint8_t channel=0x00;
-    uint8_t wave_type=0x00;
+		uint8_t type=0x01;
+		uint8_t channel=0x01;
+		uint8_t wave_type=0x00;
 //    transfer40(txValue, txBuffer);
-    build_packet(type,  channel,  wave_type,
-                 txValue,  txBuffer) ;
-		build_packet(0x00,  channel,  wave_type,
-                 0.5,  contlV) ;
-		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));						 
+      build_packet(type,  channel,  wave_type, 
+				txValue,  txBuffer) ;
     HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-				build_packet(0x00,  channel,  wave_type,
-                 1,  contlV) ;
-		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));							 
+
 //    uint8_t packet[11];
-//
+//    
 //    // 构建幅值包：通道1，正弦波，幅度123.456
 //    build_packet(0x00, 0x01, 0x00, 123.456, packet);
-//
+//    
 //    // 构建频率包：通道2，三角波，频率100000
 //    build_packet(0x01, 0x02, 0x01, 100000.0, packet);
 
@@ -124,46 +119,42 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    while (1)
-    {
-//1.发送频率实现扫频
+  while (1)
+  {
+		       
         if (dmaComplete) {
             dmaComplete = 0;
-
+            
             // 解析并存储数据
-            dataStorage[storageIndex].integer = (rxBuffer[1] << 16) |
-                                                (rxBuffer[2] << 8) |
-                                                rxBuffer[3];
+            dataStorage[storageIndex].integer = (rxBuffer[1] << 16) | 
+                                              (rxBuffer[2] << 8) | 
+                                               rxBuffer[3];
             dataStorage[storageIndex].fraction = (rxBuffer[4] << 8) | rxBuffer[5];
-
-
+           
+            
             storageIndex = (storageIndex + 1) % DATA_POINTS;
-            for(int i = 0; i < DATA_POINTS; i++) {
+						for(int i = 0; i < DATA_POINTS; i++) {
+							
+							volt[i] = dataStorage[i].integer + (dataStorage[i].fraction / 65536.0);
+					}
 
-                volt[i] = dataStorage[i].integer + (dataStorage[i].fraction / 65536.0);
-            }
-
-
-//            HAL_Delay(800);
+					
+            HAL_Delay(800);
             // 更新发送值
             txValue += 100;
             if (txValue > 3000) txValue = 100;
-            build_packet(type,  channel,  wave_type,
-                         txValue,  txBuffer) ;
-
+                   build_packet(type,  channel,  wave_type, 
+				txValue,  txBuffer) ;
+            
             // 启动下一次发送
             HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
         }
-//2.得到频率响应后分析判断        
-        combine_to_struct(freq, amplitude, n, responses);
-        const char* type = determine_filter_type(responses, n);
-				for(uint8_t i=0;i<DATA_POINTS;i++){
-					printf("%.2f\n",volt[i]);
-				}
 				
-//        printf("Filter type: %s\n", type);
-
-
+				  combine_to_struct(freq, amplitude, n, responses);
+        	    const char* type = determine_filter_type(responses, n);
+        printf("Filter type: %s\n", type); 
+       
+        
 
 //已有幅频特性曲线如何判断滤波器类型
 //并计算FIR系数
@@ -174,7 +165,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    }
+  }
 
   /* USER CODE END 3 */
 }
@@ -248,11 +239,11 @@ void SystemClock_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state */
-    __disable_irq();
-    while (1)
-    {
-    }
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -267,8 +258,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-    /* User can add his own implementation to report the file name and line number,
-       ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

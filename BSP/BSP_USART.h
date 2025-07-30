@@ -7,8 +7,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include "stdio.h"	
+typedef enum {
+    SINE_WAVE = 0x00,  // 正弦波
+    ADC_WAVE = 0x01    // ADC 波形
+} waveform_type_t;
 
-void buildpacket(uint8_t type, uint8_t channel, uint8_t wave_type, uint64_t freq, uint8_t* packet) ;
+typedef enum {
+    CHANNEL_ONE = 0x01, // 通道一
+    CHANNEL_TWO = 0x02  // 通道二
+} channel_t;
+
+
+
+void build_data_packet(uint8_t *packet, double value, waveform_type_t waveform, channel_t channel, uint8_t *data_packet) ;
 
 
 #endif

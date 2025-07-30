@@ -1,7 +1,7 @@
 Dependencies for Project 'H7-USART', Target 'H7-USART': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
-F (startup_stm32h743xx.s)(0x6881CB99)(--cpu Cortex-M7.fp.dp -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include--pd "__UVISION_VERSION SETA 542" --pd "STM32H743xx SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32h743xx.lst --xref -o h7-usart\startup_stm32h743xx.o --depend h7-usart\startup_stm32h743xx.d)
-F (../Core/Src/main.c)(0x6881CBD8)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\main.o --omf_browse h7-usart\main.crf --depend h7-usart\main.d)
+F (startup_stm32h743xx.s)(0x68898A77)(--cpu Cortex-M7.fp.dp -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include--pd "__UVISION_VERSION SETA 542" --pd "STM32H743xx SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32h743xx.lst --xref -o h7-usart\startup_stm32h743xx.o --depend h7-usart\startup_stm32h743xx.d)
+F (../Core/Src/main.c)(0x6889903C)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\main.o --omf_browse h7-usart\main.crf --depend h7-usart\main.d)
 I (../Core/Inc/main.h)(0x687DECE5)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h)(0x681CB1CA)
 I (../Core/Inc/stm32h7xx_hal_conf.h)(0x687DECE5)
@@ -40,10 +40,10 @@ I (../Core/Inc/memorymap.h)(0x687DECE4)
 I (../Core/Inc/usart.h)(0x687DECE4)
 I (../Core/Inc/gpio.h)(0x687DECE3)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5E8E3CC2)
-I (..\BSP\BSP_USART.h)(0x687E3F2C)
+I (../BSP/BSP_USART.h)(0x68898D79)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\string.h)(0x5E8E3CC2)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E3CC2)
-F (../Core/Src/gpio.c)(0x687DECE3)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\gpio.o --omf_browse h7-usart\gpio.crf --depend h7-usart\gpio.d)
+F (../Core/Src/gpio.c)(0x68898A74)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\gpio.o --omf_browse h7-usart\gpio.crf --depend h7-usart\gpio.d)
 I (../Core/Inc/gpio.h)(0x687DECE3)
 I (../Core/Inc/main.h)(0x687DECE5)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h)(0x681CB1CA)
@@ -115,7 +115,7 @@ I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h)(0x681CB1CA)
-F (../Core/Src/usart.c)(0x687DECE4)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\usart.o --omf_browse h7-usart\usart.crf --depend h7-usart\usart.d)
+F (../Core/Src/usart.c)(0x68898A75)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\usart.o --omf_browse h7-usart\usart.crf --depend h7-usart\usart.d)
 I (../Core/Inc/usart.h)(0x687DECE4)
 I (../Core/Inc/main.h)(0x687DECE5)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h)(0x681CB1CA)
@@ -868,9 +868,9 @@ I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h)(0x681CB1CA)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h)(0x681CB1CA)
-F (..\BSP\BSP_USART.c)(0x687E3F2C)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\bsp_usart.o --omf_browse h7-usart\bsp_usart.crf --depend h7-usart\bsp_usart.d)
+F (..\BSP\BSP_USART.c)(0x68899101)(--c99 --gnu -c --cpu Cortex-M7.fp.dp -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc -I ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32H7xx/Include -I ../Drivers/CMSIS/Include -I ../BSP-I.\RTE\_H7-USART-IC:\Users\wishzone\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-D__UVISION_VERSION="542" -DSTM32H743xx -D_RTE_ -DUSE_PWR_LDO_SUPPLY -DUSE_HAL_DRIVER -DSTM32H743xx-o h7-usart\bsp_usart.o --omf_browse h7-usart\bsp_usart.crf --depend h7-usart\bsp_usart.d)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5E8E3CC2)
-I (..\BSP\BSP_USART.h)(0x687E3F2C)
+I (..\BSP\BSP_USART.h)(0x68898D79)
 I (../Core/Inc/main.h)(0x687DECE5)
 I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h)(0x681CB1CA)
 I (../Core/Inc/stm32h7xx_hal_conf.h)(0x687DECE5)
@@ -908,4 +908,4 @@ I (../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h)(0x681CB1CA)
 I (../Core/Inc/usart.h)(0x687DECE4)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\string.h)(0x5E8E3CC2)
 I (C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E3CC2)
-F (..\BSP\BSP_USART.h)(0x687E3F2C)()
+F (..\BSP\BSP_USART.h)(0x68898D79)()

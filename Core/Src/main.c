@@ -97,26 +97,32 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+uint8_t packet[11];  
+double value = 123.456;  // 示例幅值
+waveform_type_t waveform = SINE_WAVE;  // 使用正弦波
+channel_t channel = CHANNEL_ONE;  // 使用通道一
+uint8_t data_packet[11];
 
+build_data_packet(packet, value, waveform, channel, data_packet);
 
-//    // ʾ��1������ADC������ (ͨ��1, 100kHz)
-//    buildpacket(0x00, 0x01, 0x00, 100000.0f, packet);
-//    HAL_UART_Transmit(&huart1, packet, sizeof(packet), HAL_MAX_DELAY);
-    
-//    // ʾ��2������DAC��� (ͨ��2, ���Ҳ�, 48.5kHz)
-    buildpacket(0x01, 0x02, 0x01, 500000.0f, packet);
-    
+//    uint8_t packet[11];  
+//double value = 987654.321;  // 示例频率
+//waveform_type_t waveform = ADC_WAVE;  // 使用ADC波形
+//channel_t channel = CHANNEL_TWO;  // 使用通道二
+//uint8_t data_packet[11];
+
+//build_data_packet(packet, value, waveform, channel, data_packet);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//HAL_UART_Transmit(&huart1, packet, sizeof(packet), HAL_MAX_DELAY);
+HAL_UART_Transmit(&huart1, packet, sizeof(packet), HAL_MAX_DELAY);
 
 ////		char test1[]="hello world!";
 ////		HAL_UART_Transmit(&huart1,(uint8_t*)test1,sizeof(test1),HAL_MAX_DELAY);
-		printf("HELLOWORLD! \r\n");
+//		printf("HELLOWORLD! \r\n");
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

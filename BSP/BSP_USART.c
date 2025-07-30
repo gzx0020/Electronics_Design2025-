@@ -17,6 +17,9 @@
 
 #include <stdio.h>// 包含标准输入输出头文件
 #include "BSP_USART.h"
+
+#include <stdint.h>
+#include <string.h>
 int fputc(int ch,FILE *f)
 {
 //采用轮询方式发送1字节数据，超时时间设置为无限等待
@@ -52,37 +55,53 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 
 
-// 构建数据包函数（使用40位整数部分，无小数部分）
-// type: 00-ADC采样率, 01-DAC输出频率
-// channel: 通道号 (1-通道1, 2-通道2...)
-// wave_type: 波形类型 (0-正弦波, 1-三角波, 2-方波)
-// freq: 频率值 (单位Hz，整数)
-// packet: 输出缓冲区（至少11字节）
-void buildpacket(uint8_t type, uint8_t channel, uint8_t wave_type, uint64_t freq, uint8_t* packet) {
-    // 包头
-    packet[0] = 0xAB;
-    
-    // 前两位类型 + 第三位通道号
-    packet[1] = type;
+
+
+
+
+
+
+// 数据包构建函数
+void build_data_packet(uint8_t *packet, double value, waveform_type_t waveform, channel_t channel, uint8_t *data_packet) {
+    // 初始化数据包的起始部分
+    packet[0] = 0xAB;  // 包头
+    packet[1] = (waveform == SINE_WAVE) ? 0x00 : 0x01;  // 类型（幅值或频率）
     packet[2] = channel;  // 通道号
-    
-    // 第四位波形类型
-    packet[3] = wave_type;
-    
-    // 开始标志
-    packet[4] = 0xCC;
-    
-    // 40位整数部分（5字节大端序）
-    // 注意：freq必须是小于2^40的值 (约1.1万亿Hz)
-    packet[5] = (freq >> 32) & 0xFF;  // 最高字节
-    packet[6] = (freq >> 24) & 0xFF;
-    packet[7] = (freq >> 16) & 0xFF;
-    packet[8] = (freq >> 8)  & 0xFF;
-    packet[9] = freq & 0xFF;
-    
+    packet[3] = waveform;  // 波形类型
+    packet[4] = 0xCC;  // 开始标志
+
+    // 处理幅值或频率部分
+    if (waveform == SINE_WAVE) {
+        // 幅值，分成整数部分和小数部分
+        int32_t integer_part = (int32_t)value;  // 整数部分
+        int16_t decimal_part = (int16_t)round((value - integer_part) * 65536);  // 小数部分，使用round()进行四舍五入
+
+        // 写入整数部分（24位大端序）
+        packet[5] = (integer_part >> 16) & 0xFF;
+        packet[6] = (integer_part >> 8) & 0xFF;
+        packet[7] = integer_part & 0xFF;
+
+        // 写入小数部分（16位大端序）
+        packet[8] = (decimal_part >> 8) & 0xFF;
+        packet[9] = decimal_part & 0xFF;
+    } else if (waveform == ADC_WAVE) {
+        // 频率部分，40位整数部分
+        uint64_t frequency = (uint64_t)value;
+
+        // 写入频率（40位大端序）
+        packet[5] = (frequency >> 32) & 0xFF;  // 高 8 位
+        packet[6] = (frequency >> 24) & 0xFF;  // 中高 8 位
+        packet[7] = (frequency >> 16) & 0xFF;  // 中低 8 位
+        packet[8] = (frequency >> 8) & 0xFF;   // 低 8 位
+        packet[9] = frequency & 0xFF;          // 低 8 位
+    }
+
     // 包尾
     packet[10] = 0xBA;
 }
+
+
+
 
 /******************* (C) COPYRIGHT 2014 ANO TECH *****END OF FILE************/
 

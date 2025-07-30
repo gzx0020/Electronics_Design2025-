@@ -2,6 +2,7 @@
 "h7-usart\startup_stm32h743xx.o"
 "h7-usart\main.o"
 "h7-usart\gpio.o"
+"h7-usart\dma.o"
 "h7-usart\memorymap.o"
 "h7-usart\usart.o"
 "h7-usart\stm32h7xx_it.o"

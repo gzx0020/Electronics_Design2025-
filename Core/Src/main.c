@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "memorymap.h"
 #include "usart.h"
 #include "gpio.h"
@@ -46,14 +47,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t packet[11];
+uint8_t data_packet[14];
+ 
 
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -74,9 +75,6 @@ int main(void)
 
   /* USER CODE END 1 */
 
-  /* MPU Configuration--------------------------------------------------------*/
-  MPU_Config();
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -95,30 +93,85 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-uint8_t packet[11];  
-double value = 123.456;  // 示例幅值
-waveform_type_t waveform = SINE_WAVE;  // 使用正弦波
-channel_t channel = CHANNEL_ONE;  // 使用通道一
-uint8_t data_packet[11];
+    txValue = 100;
+		uint8_t type=0x01;
+		uint8_t channel=0x01;
+		uint8_t wave_type=0x00;
+//    transfer40(txValue, txBuffer);
+      build_packet(type,  channel,  wave_type, 
+				txValue,  txBuffer) ;
+    HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
 
-build_data_packet(packet, value, waveform, channel, data_packet);
+//    uint8_t packet[11];
+//    
+//    // 构建幅值包：通道1，正弦波，幅度123.456
+//    build_packet(0x00, 0x01, 0x00, 123.456, packet);
+//    
+//    // 构建频率包：通道2，三角波，频率100000
+//    build_packet(0x01, 0x02, 0x01, 100000.0, packet);
 
-//    uint8_t packet[11];  
-//double value = 987654.321;  // 示例频率
-//waveform_type_t waveform = ADC_WAVE;  // 使用ADC波形
-//channel_t channel = CHANNEL_TWO;  // 使用通道二
-//uint8_t data_packet[11];
-
-//build_data_packet(packet, value, waveform, channel, data_packet);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-HAL_UART_Transmit(&huart1, packet, sizeof(packet), HAL_MAX_DELAY);
+		       
+        if (dmaComplete) {
+            dmaComplete = 0;
+            
+            // 解析并存储数据
+            dataStorage[storageIndex].integer = (rxBuffer[1] << 16) | 
+                                              (rxBuffer[2] << 8) | 
+                                               rxBuffer[3];
+            dataStorage[storageIndex].fraction = (rxBuffer[4] << 8) | rxBuffer[5];
+           
+            
+            storageIndex = (storageIndex + 1) % DATA_POINTS;
+						for(int i = 0; i < DATA_POINTS; i++) {
+							
+							volt[i] = dataStorage[i].integer + (dataStorage[i].fraction / 65536.0);
+					}
+
+					
+            HAL_Delay(800);
+            // 更新发送值
+            txValue += 100;
+            if (txValue > 3000) txValue = 100;
+                   build_packet(type,  channel,  wave_type, 
+				txValue,  txBuffer) ;
+            
+            // 启动下一次发送
+            HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
+        }
+        
+//        // 每100ms处理
+//        uint32_t currentTime = HAL_GetTick();
+//        if (currentTime - lastTime > 100) {
+//            lastTime = currentTime;
+//            processStoredData(); 
+        
+   		/*包头：0xAB
+
+字节1：类型 (0x00=幅值, 0x01=频率)
+
+字节2：通道号 (0x01=通道1, 0x02=通道2...)
+
+字节3：波形类型 (0x00=正弦波, 0x01=三角波)
+
+字节4：开始标志 0xCC
+
+字节5-7：幅度整数部分（24位大端序）
+
+字节8-9：幅度小数部分（16位大端序）
+				
+若为频率
+字节5-9：为40位整数位
+包尾：0xBA
+*
 
 ////		char test1[]="hello world!";
 ////		HAL_UART_Transmit(&huart1,(uint8_t*)test1,sizeof(test1),HAL_MAX_DELAY);
@@ -191,35 +244,6 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
- /* MPU Configuration */
-
-void MPU_Config(void)
-{
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
-
-  /* Disables the MPU */
-  HAL_MPU_Disable();
-
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
-}
 
 /**
   * @brief  This function is executed in case of error occurrence.

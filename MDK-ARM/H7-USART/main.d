@@ -34,6 +34,7 @@ h7-usart\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h
 h7-usart\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
 h7-usart\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart.h
 h7-usart\main.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h
+h7-usart\main.o: ../Core/Inc/dma.h
 h7-usart\main.o: ../Core/Inc/memorymap.h
 h7-usart\main.o: ../Core/Inc/usart.h
 h7-usart\main.o: ../Core/Inc/gpio.h

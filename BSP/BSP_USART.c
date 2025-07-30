@@ -20,6 +20,19 @@
 
 #include <stdint.h>
 #include <string.h>
+
+// 变量定义
+
+ uint8_t txBuffer[11]; 
+ uint8_t rxBuffer[7]; 
+volatile uint8_t dmaComplete = 0;
+DataPoint dataStorage[DATA_POINTS];
+uint8_t storageIndex = 0;
+uint8_t txValue;
+double volt[DATA_POINTS]={0};
+
+
+// 重定向
 int fputc(int ch,FILE *f)
 {
 //采用轮询方式发送1字节数据，超时时间设置为无限等待
@@ -34,71 +47,90 @@ HAL_UART_Receive( &huart1,(uint8_t*)&ch,1, HAL_MAX_DELAY );
 return ch;
 }
 
-/**
-	* @brief          串口接收中断回调函数
-  * @param[in]     	huart 串口序号
-  * @retval         none
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	
-	if(huart->Instance==USART1)
-	{
-
-
-	}
-	
-
+// DMA完成回调
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART1) {
+        // 启动DMA接收
+        HAL_UART_Receive_DMA(&huart1, rxBuffer, sizeof(rxBuffer));
+    }
 }
 
-
-
-
-
-
-
-
-
-
-
-// 数据包构建函数
-void build_data_packet(uint8_t *packet, double value, waveform_type_t waveform, channel_t channel, uint8_t *data_packet) {
-    // 初始化数据包的起始部分
-    packet[0] = 0xAB;  // 包头
-    packet[1] = (waveform == SINE_WAVE) ? 0x00 : 0x01;  // 类型（幅值或频率）
-    packet[2] = channel;  // 通道号
-    packet[3] = waveform;  // 波形类型
-    packet[4] = 0xCC;  // 开始标志
-
-    // 处理幅值或频率部分
-    if (waveform == SINE_WAVE) {
-        // 幅值，分成整数部分和小数部分
-        int32_t integer_part = (int32_t)value;  // 整数部分
-        int16_t decimal_part = (int16_t)round((value - integer_part) * 65536);  // 小数部分，使用round()进行四舍五入
-
-        // 写入整数部分（24位大端序）
-        packet[5] = (integer_part >> 16) & 0xFF;
-        packet[6] = (integer_part >> 8) & 0xFF;
-        packet[7] = integer_part & 0xFF;
-
-        // 写入小数部分（16位大端序）
-        packet[8] = (decimal_part >> 8) & 0xFF;
-        packet[9] = decimal_part & 0xFF;
-    } else if (waveform == ADC_WAVE) {
-        // 频率部分，40位整数部分
-        uint64_t frequency = (uint64_t)value;
-
-        // 写入频率（40位大端序）
-        packet[5] = (frequency >> 32) & 0xFF;  // 高 8 位
-        packet[6] = (frequency >> 24) & 0xFF;  // 中高 8 位
-        packet[7] = (frequency >> 16) & 0xFF;  // 中低 8 位
-        packet[8] = (frequency >> 8) & 0xFF;   // 低 8 位
-        packet[9] = frequency & 0xFF;          // 低 8 位
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+    if (huart->Instance == USART1) {
+        dmaComplete = 1;
     }
+}
 
+//// 40位转换函数
+//void transfer40(uint16_t value, uint8_t buffer[5]) {
+//	  buffer[0] = 0xAB
+//    buffer[0] = 0x00;
+//    buffer[1] = 0x00;
+//    buffer[2] = 0x00; 
+//    buffer[3] = (value >> 8) & 0xFF;
+//    buffer[4] = value & 0xFF;
+//}
+
+
+
+
+
+
+void build_packet(uint8_t type, uint8_t channel, uint8_t wave_type, 
+                  double value, uint8_t packet[11]) 
+{
+    // 包头
+    packet[0] = 0xAB;
+    // 类型
+    packet[1] = type;
+    // 通道号
+    packet[2] = channel;
+    // 波形类型
+    packet[3] = wave_type;
+    // 开始标志
+    packet[4] = 0xCC;
+
+    if (type == 0x00) {  // 幅值类型
+        // 分离整数和小数部分
+        uint32_t integer_part = (uint32_t)value;
+        double fractional = value - integer_part;
+        uint16_t fractional_part = (uint16_t)(fractional * 65536.0 + 0.5);  // 四舍五入
+        
+        // 确保不超过24位限制
+        if (integer_part > 0xFFFFFF) integer_part = 0xFFFFFF;
+        
+        // 写入幅值整数部分（24位大端序）
+        packet[5] = (integer_part >> 16) & 0xFF;
+        packet[6] = (integer_part >> 8)  & 0xFF;
+        packet[7] = integer_part & 0xFF;
+        
+        // 写入幅值小数部分（16位大端序）
+        packet[8] = (fractional_part >> 8) & 0xFF;
+        packet[9] = fractional_part & 0xFF;
+    } 
+    else if (type == 0x01) {  // 频率类型
+        // 转换为40位整数
+        uint64_t freq_value = (uint64_t)value;
+        
+        // 写入频率值（40位大端序）
+        packet[5] = (freq_value >> 32) & 0xFF;
+        packet[6] = (freq_value >> 24) & 0xFF;
+        packet[7] = (freq_value >> 16) & 0xFF;
+        packet[8] = (freq_value >> 8)  & 0xFF;
+        packet[9] = freq_value & 0xFF;
+    }
+    
     // 包尾
     packet[10] = 0xBA;
 }
+
+
+
+
+
+
+
+
 
 
 

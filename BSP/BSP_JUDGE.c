@@ -167,35 +167,44 @@ void smooth_curve(FreqResponse resp[], int n, int window_size) {
 
 
 const char* determine_filter_type(FreqResponse resp[], int n) {
-    int low_pass = 1;
-    int high_pass = 1;
+
     int band_pass = 0;
     int band_stop = 0;
-    
+  
     int zero_crossings = 0;  
     int min_gain_idx = -1, max_gain_idx = -1;
     float max_gain = resp[0].gain; 
     float min_gain = resp[0].gain; 
 //    smooth_curve(resp, n, 2);  // 平滑滤波
-if (n > 0) {
-     // 初始化最大值为第一个元素
+
+
+
+    max_gain = resp[0].gain;
+    uint16_t max_index = 0;
+    
     for (uint16_t i = 1; i < DATA_POINTS; i++) {
-        if (resp[i].gain > max_gain) {  // 如果当前元素更大
-            max_gain = resp[i].gain;    // 更新最大值
+        if (resp[i].gain > max_gain) {  
+            max_gain = resp[i].gain;    
+            max_index = i;             
         }
     }
-}
-printf("%.2f\n", max_gain);
-// 寻找最小值
-if (n > 0) {
-     // 初始化最小值为第一个元素
+
+printf("最大值: %.2f, 索引: %d\n", max_gain, max_index);
+
+
+  
+    min_gain = resp[0].gain;
+    uint16_t min_index = 0;
+    
     for (uint16_t i = 1; i < DATA_POINTS; i++) {
-        if (resp[i].gain < min_gain) {  // 如果当前元素更小
-            min_gain = resp[i].gain;    // 更新最小值
+        if (resp[i].gain < min_gain) {  
+            min_gain = resp[i].gain;    
+            min_index = i;             
         }
     }
-}
-printf("%.2f\n", min_gain);
+
+printf("最小值: %.2f, 索引: %d\n", min_gain, min_index);
+
      float mid=(max_gain-min_gain)*0.77;
     for (int i = 1; i < DATA_POINTS; i++) {
         

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "stdio.h"	
 
-#define DATA_POINTS 599
+#define DATA_POINTS 598
 
 
 typedef enum {

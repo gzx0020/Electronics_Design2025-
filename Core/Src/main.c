@@ -28,6 +28,7 @@
 #include "stdio.h"
 #include "BSP_USART.h"
 #include "BSP_JUDGE.h"
+#include "BSP_CONTROL.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define step 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,7 +57,6 @@ uint8_t dataReady=0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void delay_us(uint32_t n);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -100,16 +100,21 @@ int main(void)
   MX_UART8_Init();
   /* USER CODE BEGIN 2 */
 //	printf("HELLOWORLD! \r\n");
-    txValue = 10;
+    txValue = 100;
     uint8_t type=0x01;
     uint8_t channel=0x00;
     uint8_t wave_type=0x00;
 //    transfer40(txValue, txBuffer);
     build_packet(type,  channel,  wave_type,
                  txValue,  txBuffer) ;
+				build_packet(0x00,  channel,  wave_type,
+                 	0.5,  contlV);						 
+//    HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
+//		HAL_UART_DMAStop(&huart1);
+HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
 		build_packet(0x00,  channel,  wave_type,
-                 2.5,  contlV);
-		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));						 
+                 	calculate_input_pp(txValue+step),  contlV);
+HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);	
     HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
 //				build_packet(0x00,  channel,  wave_type,
 //                 0.3959,  contlV) ;
@@ -131,7 +136,7 @@ int main(void)
 //1.发送频率实现扫频
       if (dmaComplete) {
           dmaComplete = 0;
-          
+			
           // 解析当前数据点
           dataStorage[storageIndex].integer = (rxBuffer[1] << 16) | 
                                              (rxBuffer[2] << 8) | 
@@ -142,13 +147,16 @@ int main(void)
           volt[storageIndex] = dataStorage[storageIndex].integer + 
                               (dataStorage[storageIndex].fraction / 65536.0f);
           
+	   
+
           // 更新索引和频率值
 //				delay_us(10000);
           storageIndex++;
-          txValue += 100;
-          
+          txValue += step;
+          HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
+			 HAL_UART_DMAStop(&huart1);
           // 完成一轮扫描
-          if(txValue >= 60000 || storageIndex >= DATA_POINTS) {
+          if(txValue >= 10+ 598*100 | storageIndex >= DATA_POINTS) {
               txValue = 100;
               storageIndex = 0;
               dataReady = 1;  // 标记数据就绪
@@ -165,8 +173,7 @@ int main(void)
           				//以下发送用于波形显示调试
 				for(uint16_t i=0;i<DATA_POINTS;i++){
 					printf("%.2f\n",volt[i]);
-				}
-          
+				}          
           combine_to_struct(freq, volt, DATA_POINTS, responses);
           const char* filterType = determine_filter_type(responses, DATA_POINTS);
           

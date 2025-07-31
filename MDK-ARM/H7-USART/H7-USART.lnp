@@ -29,6 +29,7 @@
 "h7-usart\bsp_usart.o"
 "h7-usart\bsp_judge.o"
 "h7-usart\bsp_fir.o"
+"h7-usart\bsp_control.o"
 --library_type=microlib --strict --scatter "H7-USART\H7-USART.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

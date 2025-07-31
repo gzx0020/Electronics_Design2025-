@@ -620,6 +620,16 @@
               <FileType>5</FileType>
               <FilePath>.\BSP_FIR.h</FilePath>
             </File>
+            <File>
+              <FileName>BSP_CONTROL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\BSP_CONTROL.c</FilePath>
+            </File>
+            <File>
+              <FileName>BSP_CONTROL.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\BSP\BSP_CONTROL.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

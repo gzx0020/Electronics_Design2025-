@@ -43,3 +43,4 @@ h7-usart\main.o: ../BSP/BSP_USART.h
 h7-usart\main.o: C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 h7-usart\main.o: C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 h7-usart\main.o: ../BSP/BSP_JUDGE.h
+h7-usart\main.o: ../BSP/BSP_CONTROL.h

@@ -37,6 +37,8 @@ extern volatile uint8_t dmaComplete;
 extern uint16_t txValue;
 extern float volt[DATA_POINTS];
 extern uint8_t contlV[11];
+extern uint8_t H7Buffer[8];
+
 
 // º¯ÊýÉùÃ÷
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart);
@@ -46,4 +48,5 @@ void transfer40(uint16_t value, uint8_t buffer[5]) ;
 void processStoredData(void);
 void build_packet(uint8_t type, uint8_t channel, uint8_t wave_type, 
                   double value, uint8_t packet[11]) ;
+double calculate_input_pp(double freq);
 #endif

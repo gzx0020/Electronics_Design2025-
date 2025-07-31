@@ -31,7 +31,8 @@ DataPoint dataStorage[DATA_POINTS];
 uint16_t storageIndex = 0;
 uint16_t txValue;
 float_t volt[DATA_POINTS]={0};
-
+// uart7接收串口屏发送的数组
+uint8_t H7Buffer[8];
 
 // 重定向
 int fputc(int ch,FILE *f)
@@ -141,7 +142,15 @@ void build_packet(uint8_t type, uint8_t channel, uint8_t wave_type,
 
 
 
-
+uint32_t hex_to_decimal(const uint8_t *bytes) {
+    // 小端序：低地址存储低位字节    
+    return (uint32_t)(
+        (bytes[2] << 0)  |  // 最低位字节，左移0位
+        (bytes[3] << 8)  |  // 次低位字节，左移8位
+        (bytes[4] << 16) |  // 次高位字节，左移16位
+        (bytes[5] << 24)    // 最高位字节，左移24位
+    );
+}
 
 
 

@@ -9,11 +9,11 @@
 #define NUMERATOR 5
 #define REAL_PART_COEFFICIENT 1e-8
 #define IMAG_PART_COEFFICIENT 3e-4
-
+#define step 100
 extern uint8_t DMA_flag;
 
 
-double calculate_input_pp(double freq);
+
 
 
 #endif

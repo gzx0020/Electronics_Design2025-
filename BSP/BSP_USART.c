@@ -28,9 +28,9 @@
  uint8_t rxBuffer[7]; 
 volatile uint8_t dmaComplete = 0;
 DataPoint dataStorage[DATA_POINTS];
-uint8_t storageIndex = 0;
-uint8_t txValue;
-float volt[DATA_POINTS]={0};
+uint16_t storageIndex = 0;
+uint16_t txValue;
+float_t volt[DATA_POINTS]={0};
 
 
 // 重定向

@@ -48,7 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t dataReady=0;
 
 
 
@@ -56,6 +56,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void delay_us(uint32_t n);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -98,7 +99,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_UART8_Init();
   /* USER CODE BEGIN 2 */
-    txValue = 100;
+//	printf("HELLOWORLD! \r\n");
+    txValue = 10;
     uint8_t type=0x01;
     uint8_t channel=0x00;
     uint8_t wave_type=0x00;
@@ -106,12 +108,12 @@ int main(void)
     build_packet(type,  channel,  wave_type,
                  txValue,  txBuffer) ;
 		build_packet(0x00,  channel,  wave_type,
-                 0.5,  contlV) ;
+                 2.5,  contlV);
 		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));						 
     HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-				build_packet(0x00,  channel,  wave_type,
-                 1,  contlV) ;
-		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));							 
+//				build_packet(0x00,  channel,  wave_type,
+//                 0.3959,  contlV) ;
+//		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));							 
 //    uint8_t packet[11];
 //
 //    // 构建幅值包：通道1，正弦波，幅度123.456
@@ -127,41 +129,54 @@ int main(void)
     while (1)
     {
 //1.发送频率实现扫频
-        if (dmaComplete) {
-            dmaComplete = 0;
-
-            // 解析并存储数据
-            dataStorage[storageIndex].integer = (rxBuffer[1] << 16) |
-                                                (rxBuffer[2] << 8) |
-                                                rxBuffer[3];
-            dataStorage[storageIndex].fraction = (rxBuffer[4] << 8) | rxBuffer[5];
-
-
-            storageIndex = (storageIndex + 1) % DATA_POINTS;
-            for(int i = 0; i < DATA_POINTS; i++) {
-
-                volt[i] = dataStorage[i].integer + (dataStorage[i].fraction / 65536.0);
-            }
-
-
-//            HAL_Delay(800);
-            // 更新发送值
-            txValue += 100;
-            if (txValue > 3000) txValue = 100;
-            build_packet(type,  channel,  wave_type,
-                         txValue,  txBuffer) ;
-
-            // 启动下一次发送
-            HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-        }
-//2.得到频率响应后分析判断        
-        combine_to_struct(freq, amplitude, n, responses);
-        const char* type = determine_filter_type(responses, n);
-				for(uint8_t i=0;i<DATA_POINTS;i++){
+      if (dmaComplete) {
+          dmaComplete = 0;
+          
+          // 解析当前数据点
+          dataStorage[storageIndex].integer = (rxBuffer[1] << 16) | 
+                                             (rxBuffer[2] << 8) | 
+                                             rxBuffer[3];
+          dataStorage[storageIndex].fraction = (rxBuffer[4] << 8) | rxBuffer[5];
+          
+          // 转换为浮点数
+          volt[storageIndex] = dataStorage[storageIndex].integer + 
+                              (dataStorage[storageIndex].fraction / 65536.0f);
+          
+          // 更新索引和频率值
+//				delay_us(10000);
+          storageIndex++;
+          txValue += 100;
+          
+          // 完成一轮扫描
+          if(txValue >= 60000 || storageIndex >= DATA_POINTS) {
+              txValue = 100;
+              storageIndex = 0;
+              dataReady = 1;  // 标记数据就绪
+          }
+          
+          // 发送下一个频率
+          build_packet(type, channel, wave_type, txValue, txBuffer);
+          HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
+      }
+      
+      // 2. 频谱分析
+      if(dataReady) {
+          dataReady = 0;
+          				//以下发送用于波形显示调试
+				for(uint16_t i=0;i<DATA_POINTS;i++){
 					printf("%.2f\n",volt[i]);
 				}
+          
+          combine_to_struct(freq, volt, DATA_POINTS, responses);
+          const char* filterType = determine_filter_type(responses, DATA_POINTS);
+          
+             printf("Filter type: %s\n", filterType);
+      }
+
+
+
 				
-//        printf("Filter type: %s\n", type);
+	  
 
 
 
@@ -238,7 +253,45 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void delay_us(uint32_t n)
+{
+    uint32_t ticks;
+    uint32_t told;
+    uint32_t tnow;
+    uint32_t tcnt = 0;
+    uint32_t reload;
+       
+	reload = SysTick->LOAD;                
+    ticks = n * (SystemCoreClock / 1000000);	 /* 需要的节拍数 */  
+    
+    tcnt = 0;
+    told = SysTick->VAL;             /* 刚进入时的计数器值 */
+ 
+    while (1)
+    {
+        tnow = SysTick->VAL;    
+        if (tnow != told)
+        {    
+            /* SYSTICK是一个递减的计数器 */    
+            if (tnow < told)
+            {
+                tcnt += told - tnow;    
+            }
+            /* 重新装载递减 */
+            else
+            {
+                tcnt += reload - tnow + told;    
+            }        
+            told = tnow;
+ 
+            /* 时间超过/等于要延迟的时间,则退出 */
+            if (tcnt >= ticks)
+            {
+            	break;
+            }
+        }  
+    }
+} 
 /* USER CODE END 4 */
 
 /**

@@ -10,7 +10,7 @@
 
 typedef struct {
     uint16_t freq;
-    double gain;  
+    float gain;  
 }FreqResponse;
 
 
@@ -23,7 +23,7 @@ extern uint8_t n;
 
 
 const char* determine_filter_type(FreqResponse resp[], int n) ;
-
+void smooth_curve(FreqResponse resp[], int n, int window_size);
 
 
 

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "stdio.h"	
 
-#define DATA_POINTS 32
+#define DATA_POINTS 599
 
 
 typedef enum {
@@ -32,9 +32,9 @@ typedef struct {
 extern uint8_t txBuffer[11]; 
 extern uint8_t rxBuffer[7];
 extern DataPoint dataStorage[DATA_POINTS];
-extern uint8_t storageIndex ;
+extern uint16_t storageIndex ;
 extern volatile uint8_t dmaComplete;
-extern uint8_t txValue;
+extern uint16_t txValue;
 extern float volt[DATA_POINTS];
 extern uint8_t contlV[11];
 

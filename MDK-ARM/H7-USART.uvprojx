@@ -314,7 +314,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -609,6 +609,16 @@
               <FileName>BSP_JUDGE.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\BSP\BSP_JUDGE.h</FilePath>
+            </File>
+            <File>
+              <FileName>BSP_FIR.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\BSP_FIR.c</FilePath>
+            </File>
+            <File>
+              <FileName>BSP_FIR.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\BSP_FIR.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -114,14 +114,14 @@ int main(void)
 
 HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
 // 开启串口屏接收等待数据
-HAL_UART_Receive(&huart7, H7Buffer, 8, 1000);
+HAL_UART_Receive(&huart7, H7Buffer, 8, HAL_MAX_DELAY);
 // 55 00 设置频率  55 01 设置vpp
-if(H7Buffer[0]==55){
-	if(H7Buffer[1]==00){
+if(H7Buffer[0]==0x55){
+	if(H7Buffer[1]==0x00){
 				build_packet(0x01,  0x00,  0x00,hex_to_decimal(H7Buffer),  contlV);
 	      HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
 	}
-	else if(H7Buffer[1]==01){
+	else if(H7Buffer[1]==0x01){
 		    build_packet(0x00,  0x00,  0x00,0.001*hex_to_decimal(H7Buffer), txBuffer);
 	      HAL_UART_Transmit(&huart1,  txBuffer, sizeof( txBuffer), 100);	
 	}
@@ -169,8 +169,8 @@ HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
 //				delay_us(10000);
           storageIndex++;
           txValue += step;
-          HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
-			 HAL_UART_DMAStop(&huart1);
+        
+		
           // 完成一轮扫描
           if(txValue >= 10+ 598*100 | storageIndex >= DATA_POINTS) {
               txValue = 100;

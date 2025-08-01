@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>113</LineNumber>
+          <LineNumber>118</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134251962</Address>
+          <Address>134249450</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,23 +163,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>C:\Users\wishzone\Desktop\Documents\2025鐢佃禌\UART_FREQ\Core\Src\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\H7_USART\../Core/Src/main.c\113</Expression>
+          <Expression>\\H7_USART\../Core/Src/main.c\118</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>67</LineNumber>
+          <LineNumber>122</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134240326</Address>
+          <Address>134249470</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>C:\Users\wishzone\Desktop\Documents\2025鐢佃禌\UART_FREQ\BSP\BSP_USART.c</Filename>
+          <Filename>C:\Users\wishzone\Desktop\Documents\2025鐢佃禌\UART_FREQ\Core\Src\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\H7_USART\../BSP/BSP_USART.c\67</Expression>
+          <Expression>\\H7_USART\../Core/Src/main.c\122</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -287,6 +287,31 @@
           <count>20</count>
           <WinNumber>1</WinNumber>
           <ItemText>currentState</ItemText>
+        </Ww>
+        <Ww>
+          <count>21</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>txBuffer</ItemText>
+        </Ww>
+        <Ww>
+          <count>22</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>dataready,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>23</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>freq_update,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>24</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>amplitude</ItemText>
+        </Ww>
+        <Ww>
+          <count>25</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>amplitude_1</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

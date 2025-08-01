@@ -53,7 +53,7 @@
 uint8_t dataReady=0;
 SystemState currentState = STATE_IDLE;
 uint16_t freq_update =1000;
-
+double amplitude_1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,33 +74,33 @@ void SystemClock_Config(void);
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+    /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+    /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+    /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
 
-  /* USER CODE BEGIN Init */
+    /* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+    /* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* Configure the system clock */
+    SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+    /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+    /* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_USART1_UART_Init();
-  MX_UART8_Init();
-  MX_UART7_Init();
-  /* USER CODE BEGIN 2 */
+    /* Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_DMA_Init();
+    MX_USART1_UART_Init();
+    MX_UART8_Init();
+    MX_UART7_Init();
+    /* USER CODE BEGIN 2 */
 //	printf("HELLOWORLD! \r\n");
 
 //    uint8_t type=0x01;
@@ -109,62 +109,97 @@ int main(void)
 //    transfer40(txValue, txBuffer);
 //初始化vpp=1
 //    build_packet(0x01,  0x00,  0x00,txValue,  txBuffer) ;
-		build_packet(0x00,  0x00,  0x00,0.5,  contlV);	
-HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
-// 开启串口屏接收等待数据
-HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));  // 启用中断接收
-// 55 00 设置频率  55 01 设置vpp
-process_H7_command(H7Buffer[0], H7Buffer, &freq_update, txBuffer, &contlV) ;
-  /* USER CODE END 2 */
+    build_packet(0x00,  0x00,  0x00,0.5,  contlV);
+    HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
+// HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+//		   HAL_UART_Transmit(&huart1, txBuffer, sizeof(txBuffer), 100);
+// 开启串口屏接收等待数据
+    HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));  // 启用中断接收
+    while(!dataready)
+        ;
+// 55 00 设置频率  55 01 设置vpp
+    process_H7_command(H7Buffer[0], H7Buffer, &freq_update, txBuffer, &contlV) ;
+
+    /* USER CODE END 2 */
+
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
     while (1)
     {
-			    switch(currentState) {
-								case STATE_SET_FREQ:
-										currentState = STATE_IDLE;
-										break;									
-								case STATE_SET_AMPLITUDE:									
-										currentState = STATE_IDLE;
-										break;
-										
-								case STATE_SWEEP:
-										handle_sweep_mode();  // 扫频处理函数
-										break;
-								case STATE_LEARNING:
-                    currentState = STATE_IDLE;
-					//          				//以下发送用于波形显示调试
-					//				for(uint16_t i=0;i<DATA_POINTS;i++){
-					//					printf("%.2f\n",volt[i]);
-					//				}          
-										combine_to_struct(freq, volt, DATA_POINTS, responses);
-										const char* filterType = determine_filter_type(responses, DATA_POINTS);
-										// 以下用于调试时打印到串口8
-					//             printf("Filter type: %s\n", filterType);
-									// 以下用于发送给串口屏
-										 printf("t7.txt=\"%s\"\xff\xff\xff",filterType);
-									// 计算并给fpga发送滤波器系数			
+        while(!dataready)
+            ;
 
+        process_H7_command(H7Buffer[0], H7Buffer, contlV, txBuffer, &txValue);
+        switch(currentState) {
+        case STATE_SET_FREQ: {
+            freq_update=hex_to_decimal(H7Buffer);
+            build_packet(0x01, 0x00, 0x00,freq_update,txBuffer);
+            HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
+            dataready=0;
+            HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));
+            currentState = STATE_IDLE;
 
-										send_fir_coefficients(fir_coeff, 0x00); 
-                     break;								
-                case TRANS_FPGA:
-									build_packet(0x00,  0x00,  0x00,0.5,  contlV);
-									HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-                   break;  									
-								case STATE_IDLE:
-										// 低功耗模式或后台任务
-										
-										break;
-    }
+            break;
+        }
+        case STATE_SET_AMPLITUDE: {
+            amplitude_1 = calculate_input_pp((double)freq_update, 0.001f * hex_to_decimal(H7Buffer))/2;
+            build_packet(0x00, 0x00, 0x00, amplitude_1, contlV);
+            HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
+            currentState = STATE_IDLE;
+            dataready=0;
+            HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));
+					  currentState = STATE_IDLE;
+            break;
+        }
 
 
 
 
+        case STATE_LEARNING: {
+            handle_sweep_mode();  // 扫频处理函数
 
-				
-	  
+
+            //          				//以下发送用于波形显示调试
+            //				for(uint16_t i=0;i<DATA_POINTS;i++){
+            //					printf("%.2f\n",volt[i]);
+            //				}
+            combine_to_struct(freq, volt, DATA_POINTS, responses);
+            const char* filterType = determine_filter_type(responses, DATA_POINTS);
+            // 以下用于调试时打印到串口8
+            //             printf("Filter type: %s\n", filterType);
+            // 以下用于发送给串口屏
+            printf("t7.txt=\"%s\"\xff\xff\xff",filterType);
+            // 计算并给fpga发送滤波器系数
+
+
+            send_fir_coefficients(fir_coeff, 0x00);
+            dataready=0;
+            HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));
+            currentState = STATE_IDLE;
+            break;
+        }
+        case TRANS_FPGA: {
+            build_packet(0x00,  0x00,  0x00,0.5,  contlV);
+            HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
+            dataready=0;
+            HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));
+					  currentState = STATE_IDLE;
+            break;
+        }
+        case STATE_IDLE:
+            dataready=0;
+            HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));
+
+            break;
+        }
+
+
+
+
+
+
+
 
 
 
@@ -174,12 +209,12 @@ process_H7_command(H7Buffer[0], H7Buffer, &freq_update, txBuffer, &contlV) ;
 ////		char test1[]="hello world!";
 ////		HAL_UART_Transmit(&huart1,(uint8_t*)test1,sizeof(test1),HAL_MAX_DELAY);
 //		printf("HELLOWORLD! \r\n");
-    /* USER CODE END WHILE */
+        /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+        /* USER CODE BEGIN 3 */
     }
 
-  /* USER CODE END 3 */
+    /* USER CODE END 3 */
 }
 
 /**
@@ -188,56 +223,56 @@ process_H7_command(H7Buffer[0], H7Buffer, &freq_update, txBuffer, &contlV) ;
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Supply configuration update enable
-  */
-  HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+    /** Supply configuration update enable
+    */
+    HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+    /** Configure the main internal regulator output voltage
+    */
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
-  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+    while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 5;
-  RCC_OscInitStruct.PLL.PLLN = 192;
-  RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
-  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /** Initializes the RCC Oscillators according to the specified parameters
+    * in the RCC_OscInitTypeDef structure.
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 5;
+    RCC_OscInitStruct.PLL.PLLN = 192;
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 2;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    /** Initializes the CPU, AHB and APB buses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                                  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
+                                  |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /* USER CODE BEGIN 4 */
@@ -248,38 +283,38 @@ void delay_us(uint32_t n)
     uint32_t tnow;
     uint32_t tcnt = 0;
     uint32_t reload;
-       
-	reload = SysTick->LOAD;                
-    ticks = n * (SystemCoreClock / 1000000);	 /* 需要的节拍数 */  
-    
+
+    reload = SysTick->LOAD;
+    ticks = n * (SystemCoreClock / 1000000);	 /* 需要的节拍数 */
+
     tcnt = 0;
     told = SysTick->VAL;             /* 刚进入时的计数器值 */
- 
+
     while (1)
     {
-        tnow = SysTick->VAL;    
+        tnow = SysTick->VAL;
         if (tnow != told)
-        {    
-            /* SYSTICK是一个递减的计数器 */    
+        {
+            /* SYSTICK是一个递减的计数器 */
             if (tnow < told)
             {
-                tcnt += told - tnow;    
+                tcnt += told - tnow;
             }
             /* 重新装载递减 */
             else
             {
-                tcnt += reload - tnow + told;    
-            }        
+                tcnt += reload - tnow + told;
+            }
             told = tnow;
- 
+
             /* 时间超过/等于要延迟的时间,则退出 */
             if (tcnt >= ticks)
             {
-            	break;
+                break;
             }
-        }  
+        }
     }
-} 
+}
 /* USER CODE END 4 */
 
 /**
@@ -288,13 +323,13 @@ void delay_us(uint32_t n)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
+    /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1)
     {
     }
-  /* USER CODE END Error_Handler_Debug */
+    /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -307,9 +342,9 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
        ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

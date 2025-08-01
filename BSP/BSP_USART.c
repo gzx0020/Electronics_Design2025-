@@ -34,7 +34,7 @@ uint16_t txValue=100;
 float_t volt[DATA_POINTS]={0};
 // uart7接收串口屏发送的数组
 uint8_t H7Buffer[8];
-
+uint8_t dataready=0;
 // 重定向
 int fputc(int ch,FILE *f)
 {
@@ -63,9 +63,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART1) {
         dmaComplete = 1;
     }
-				    if(huart->Instance == &huart7) {
-        process_H7_command(H7Buffer[0], H7Buffer, contlV, txBuffer, &txValue);
-        HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));// 重新启用接收
+				    if(huart->Instance == UART7) {
+							dataready=1;
+       
+//        HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));// 重新启用接收
     }
 }
 

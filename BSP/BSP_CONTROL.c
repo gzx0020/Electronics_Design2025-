@@ -78,21 +78,16 @@ void process_H7_command(uint8_t header_byte, uint8_t *H7Buffer,
 	 
     if(header_byte == 0x55) {
         if(H7Buffer[1] == 0x00) {  // 设置频率
-            *freq_update=hex_to_decimal(H7Buffer);
-            build_packet(0x01, 0x00, 0x00, *freq_update, txBuffer);			
-						
-            HAL_UART_Transmit_DMA(&huart1, *freq_update, sizeof(txBuffer));
+
             currentState = STATE_SET_FREQ;
         } 
         else if(H7Buffer[1] == 0x01) {  // 设置幅值
-            float amplitude = calculate_input_pp((double)*freq_update, 0.001f * hex_to_decimal(H7Buffer));
-            build_packet(0x00, 0x00, 0x00, amplitude, contlV);
-            HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));
+
             currentState = STATE_SET_AMPLITUDE;
         }
     } 
     else if(header_byte == 0xAA) {  // 启动扫频
-        currentState = STATE_SWEEP;        
+        currentState = STATE_LEARNING;        
     }
 		else if(header_byte == 0xBB) {  
         currentState = TRANS_FPGA;        

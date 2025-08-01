@@ -39,3 +39,4 @@ h7-usart\bsp_usart.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.
 h7-usart\bsp_usart.o: ../Core/Inc/usart.h
 h7-usart\bsp_usart.o: C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 h7-usart\bsp_usart.o: C:\Users\wishzone\AppData\Local\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+h7-usart\bsp_usart.o: ..\BSP\BSP_CONTROL.h

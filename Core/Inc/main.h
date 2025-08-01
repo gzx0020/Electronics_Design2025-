@@ -36,6 +36,16 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum {
+    STATE_IDLE,          // ����״̬
+    STATE_SET_FREQ,      // ����Ƶ��
+    STATE_SET_AMPLITUDE, // ���÷�ֵ    
+    STATE_SWEEP,         // ɨƵģʽ
+    STATE_LEARNING,       // ѧϰģʽ
+	  TRANS_FPGA           // ����FPGA���
+} SystemState;
+
+extern SystemState currentState;
 
 /* USER CODE END ET */
 

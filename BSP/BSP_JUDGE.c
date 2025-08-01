@@ -182,7 +182,7 @@ const char* determine_filter_type(FreqResponse resp[], int n) {
     max_gain = resp[0].gain;
     uint16_t max_index = 0;
     
-    for (uint16_t i = 1; i < DATA_POINTS; i++) {
+    for (uint16_t i = 10; i < DATA_POINTS; i++) {
         if (resp[i].gain > max_gain) {  
             max_gain = resp[i].gain;    
             max_index = i;             
@@ -196,7 +196,7 @@ printf("最大值: %.2f, 索引: %d\n", max_gain, max_index);
     min_gain = resp[0].gain;
     uint16_t min_index = 0;
     
-    for (uint16_t i = 1; i < DATA_POINTS; i++) {
+    for (uint16_t i = 10; i < DATA_POINTS; i++) {
         if (resp[i].gain < min_gain) {  
             min_gain = resp[i].gain;    
             min_index = i;             
@@ -206,7 +206,7 @@ printf("最大值: %.2f, 索引: %d\n", max_gain, max_index);
 printf("最小值: %.2f, 索引: %d\n", min_gain, min_index);
 
      float mid=(max_gain-min_gain)*0.77;
-    for (int i = 1; i < DATA_POINTS; i++) {
+    for (int i = 10; i < DATA_POINTS; i++) {
         
         if ((resp[i-1].gain > mid && resp[i].gain < mid) || (resp[i-1].gain < mid && resp[i].gain > mid)) {
             zero_crossings++;  

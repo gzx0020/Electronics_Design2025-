@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "BSP_CONTROL.h"
 
 // 变量定义
 
@@ -29,7 +30,7 @@
 volatile uint8_t dmaComplete = 0;
 DataPoint dataStorage[DATA_POINTS];
 uint16_t storageIndex = 0;
-uint16_t txValue;
+uint16_t txValue=100;
 float_t volt[DATA_POINTS]={0};
 // uart7接收串口屏发送的数组
 uint8_t H7Buffer[8];
@@ -55,13 +56,20 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
         // 启动DMA接收
         HAL_UART_Receive_DMA(&huart1, rxBuffer, sizeof(rxBuffer));
     }
+
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     if (huart->Instance == USART1) {
         dmaComplete = 1;
     }
+				    if(huart->Instance == &huart7) {
+        process_H7_command(H7Buffer[0], H7Buffer, contlV, txBuffer, &txValue);
+        HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));// 重新启用接收
+    }
 }
+
+
 
 //// 40位转换函数
 //void transfer40(uint16_t value, uint8_t buffer[5]) {
@@ -151,8 +159,22 @@ uint32_t hex_to_decimal(const uint8_t *bytes) {
         (bytes[5] << 24)    // 最高位字节，左移24位
     );
 }
+// 发送FIR系数
+void send_fir_coefficients(const double fir_coeff[100], uint8_t wave_type) {
+    uint8_t packet[11];
 
+    for (uint8_t i = 0; i < 100; i++) {
+        // 通道号作为系数编号（从 1 到 100，对应 0x01 到 0x64）
+        uint8_t channel = i + 1;
 
+        // 类型为 0x02 表示 FIR 系数
+        build_packet(0x02, channel, wave_type, fir_coeff[i], packet);
+
+        // 通过串口发送数据包（11字节）
+       HAL_UART_Transmit_DMA(&huart1, packet, sizeof(packet));
+
+    }
+}
 
 
 

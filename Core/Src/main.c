@@ -29,6 +29,7 @@
 #include "BSP_USART.h"
 #include "BSP_JUDGE.h"
 #include "BSP_CONTROL.h"
+#include "BSP_FIR.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,8 +51,8 @@
 
 /* USER CODE BEGIN PV */
 uint8_t dataReady=0;
-
-
+SystemState currentState = STATE_IDLE;
+uint16_t freq_update =1000;
 
 /* USER CODE END PV */
 
@@ -101,110 +102,64 @@ int main(void)
   MX_UART7_Init();
   /* USER CODE BEGIN 2 */
 //	printf("HELLOWORLD! \r\n");
-    txValue = 100;
+
 //    uint8_t type=0x01;
 //    uint8_t channel=0x00;
 //    uint8_t wave_type=0x00;
 //    transfer40(txValue, txBuffer);
 //初始化vpp=1
-    build_packet(0x01,  0x00,  0x00,
-                 txValue,  txBuffer) ;
-				build_packet(0x00,  0x00,  0x00,
-                 	0.5,  contlV);	
-
+//    build_packet(0x01,  0x00,  0x00,txValue,  txBuffer) ;
+		build_packet(0x00,  0x00,  0x00,0.5,  contlV);	
 HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
 // 开启串口屏接收等待数据
-HAL_UART_Receive(&huart7, H7Buffer, 8, HAL_MAX_DELAY);
+HAL_UART_Receive_DMA(&huart7, H7Buffer,sizeof(H7Buffer));  // 启用中断接收
 // 55 00 设置频率  55 01 设置vpp
-if(H7Buffer[0]==0x55){
-	if(H7Buffer[1]==0x00){
-				build_packet(0x01,  0x00,  0x00,hex_to_decimal(H7Buffer),  contlV);
-	      HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);
-	}
-	else if(H7Buffer[1]==0x01){
-		    build_packet(0x00,  0x00,  0x00,0.001*hex_to_decimal(H7Buffer), txBuffer);
-	      HAL_UART_Transmit(&huart1,  txBuffer, sizeof( txBuffer), 100);	
-	}
-} else if(H7Buffer[0]==0xAA){
-
-		build_packet(0x00,  0x00,  0x00,
-                 	calculate_input_pp(txValue+step),  contlV);
-HAL_UART_Transmit(&huart1, contlV, sizeof(contlV), 100);	
-    HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-}
-//				build_packet(0x00,  channel,  wave_type,
-//                 0.3959,  contlV) ;
-//		HAL_UART_Transmit_DMA(&huart1, contlV, sizeof(contlV));							 
-//    uint8_t packet[11];
-//
-//    // 构建幅值包：通道1，正弦波，幅度123.456
-//    build_packet(0x00, 0x01, 0x00, 123.456, packet);
-//
-//    // 构建频率包：通道2，三角波，频率100000
-//    build_packet(0x01, 0x02, 0x01, 100000.0, packet);
-
+process_H7_command(H7Buffer[0], H7Buffer, &freq_update, txBuffer, &contlV) ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
     while (1)
     {
-//1.发送频率实现扫频
-      if (dmaComplete) {
-          dmaComplete = 0;
-			
-          // 解析当前数据点
-          dataStorage[storageIndex].integer = (rxBuffer[1] << 16) | 
-                                             (rxBuffer[2] << 8) | 
-                                             rxBuffer[3];
-          dataStorage[storageIndex].fraction = (rxBuffer[4] << 8) | rxBuffer[5];
-          
-          // 转换为浮点数
-          volt[storageIndex] = dataStorage[storageIndex].integer + 
-                              (dataStorage[storageIndex].fraction / 65536.0f);
-          
-	   
+			    switch(currentState) {
+								case STATE_SET_FREQ:
+										currentState = STATE_IDLE;
+										break;									
+								case STATE_SET_AMPLITUDE:									
+										currentState = STATE_IDLE;
+										break;
+										
+								case STATE_SWEEP:
+										handle_sweep_mode();  // 扫频处理函数
+										break;
+								case STATE_LEARNING:
+                    currentState = STATE_IDLE;
+					//          				//以下发送用于波形显示调试
+					//				for(uint16_t i=0;i<DATA_POINTS;i++){
+					//					printf("%.2f\n",volt[i]);
+					//				}          
+										combine_to_struct(freq, volt, DATA_POINTS, responses);
+										const char* filterType = determine_filter_type(responses, DATA_POINTS);
+										// 以下用于调试时打印到串口8
+					//             printf("Filter type: %s\n", filterType);
+									// 以下用于发送给串口屏
+										 printf("t7.txt=\"%s\"\xff\xff\xff",filterType);
+									// 计算并给fpga发送滤波器系数			
 
-          // 更新索引和频率值
-//				delay_us(10000);
-          storageIndex++;
-          txValue += step;
-        
-		
-          // 完成一轮扫描
-          if(txValue >= 10+ 598*100 | storageIndex >= DATA_POINTS) {
-              txValue = 100;
-              storageIndex = 0;
-              dataReady = 1;  // 标记数据就绪
-          }
-          
-          // 发送下一个频率
-          build_packet(0x01, 0x00, 0x00, txValue, txBuffer);
-          HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
-      }
-      
-      // 2. 频谱分析
-      if(dataReady) {
-				          dataReady = 0;
-          				//以下发送用于波形显示调试
-				for(uint16_t i=0;i<DATA_POINTS;i++){
-					printf("%.2f\n",volt[i]);
-				}          
-          combine_to_struct(freq, volt, DATA_POINTS, responses);
-          const char* filterType = determine_filter_type(responses, DATA_POINTS);
-          // 以下用于调试时打印到串口8
-//             printf("Filter type: %s\n", filterType);
-				// 以下用于发送给串口屏
-           printf("t7.txt=\"%s\"\xff\xff\xff",filterType);
-				// 计算并给fpga发送滤波器系数
-		
-			if (HAL_UART_Receive(&huart7, H7Buffer, 8, 1000)!=HAL_OK && H7Buffer[0]==0xBB){
-           // 控制fpga输出
-				
-			}
-			
-				
-      }
+
+										send_fir_coefficients(fir_coeff, 0x00); 
+                     break;								
+                case TRANS_FPGA:
+									build_packet(0x00,  0x00,  0x00,0.5,  contlV);
+									HAL_UART_Transmit_DMA(&huart1, txBuffer, sizeof(txBuffer));
+                   break;  									
+								case STATE_IDLE:
+										// 低功耗模式或后台任务
+										
+										break;
+    }
+
+
 
 
 

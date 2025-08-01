@@ -12,8 +12,9 @@
 #define step 100
 extern uint8_t DMA_flag;
 
-
-
+double calculate_input_pp(double freq, double output_pp);
+void process_H7_command(uint8_t header_byte, uint8_t *H7Buffer, 
+                       uint8_t *txBuffer, uint8_t *contlV,uint16_t *freq_update);
 
 
 #endif

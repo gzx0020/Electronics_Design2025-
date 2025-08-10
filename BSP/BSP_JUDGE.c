@@ -1,7 +1,7 @@
 #include "BSP_JUDGE.h"
 
 
-uint16_t freq[DATA_POINTS] = {0};
+uint32_t freq[DATA_POINTS] = {0};
 
 
 
@@ -11,11 +11,9 @@ float amplitude[DATA_POINTS] = {0.0};
 FreqResponse responses[DATA_POINTS];
 
 
-void combine_to_struct(double freq[],  double amplitude[], int n, FreqResponse responses[]) {
-	for (uint16_t i=0;i<DATA_POINTS;i++){
-	freq[i]=100+i*100;
-}
-    for (int i = 0; i < DATA_POINTS; i++) {
+void combine_to_struct(uint32_t freq[], float amplitude[], int n, FreqResponse responses[]) {
+
+    for (uint16_t i = 0; i < DATA_POINTS; i++) {
         responses[i].freq = freq[i];
         responses[i].gain = amplitude[i];
     }
@@ -167,94 +165,48 @@ void smooth_curve(FreqResponse resp[], int n, int window_size) {
 
 
 const char* determine_filter_type(FreqResponse resp[], int n) {
-
-    int band_pass = 0;
-    int band_stop = 0;
-  
-    int zero_crossings = 0;  
-    int min_gain_idx = -1, max_gain_idx = -1;
-    float max_gain = resp[0].gain; 
-    float min_gain = resp[0].gain; 
-//    smooth_curve(resp, n, 2);  // 平滑滤波
-
-
-
-    max_gain = resp[0].gain;
-    uint16_t max_index = 0;
     
-    for (uint16_t i = 10; i < DATA_POINTS; i++) {
-        if (resp[i].gain > max_gain) {  
-            max_gain = resp[i].gain;    
-            max_index = i;             
-        }
+
+    // 1. 找到最低频和最高频的索引
+    int idx_low = 0, idx_high = 0;
+    for (int i = 1; i < n; i++) {
+        if (resp[i].freq < resp[idx_low].freq) idx_low = i;
+        if (resp[i].freq > resp[idx_high].freq) idx_high = i;
     }
+    double low_gain = resp[idx_low].gain;
+    double high_gain = resp[idx_high].gain;
 
-printf("最大值: %.2f, 索引: %d\n", max_gain, max_index);
-
-
-  
-    min_gain = resp[0].gain;
-    uint16_t min_index = 0;
-    
-    for (uint16_t i = 10; i < DATA_POINTS; i++) {
-        if (resp[i].gain < min_gain) {  
-            min_gain = resp[i].gain;    
-            min_index = i;             
-        }
+    // 2. 计算最大增益和阈值（-3dB点）
+    double max_gain = resp[0].gain;
+    for (int i = 1; i < n; i++) {
+        if (resp[i].gain > max_gain) max_gain = resp[i].gain;
     }
+    double threshold = max_gain * 0.9; // 线性增益阈值
 
-printf("最小值: %.2f, 索引: %d\n", min_gain, min_index);
-
-     float mid=(max_gain-min_gain)*0.77;
-    for (int i = 10; i < DATA_POINTS; i++) {
-        
-        if ((resp[i-1].gain > mid && resp[i].gain < mid) || (resp[i-1].gain < mid && resp[i].gain > mid)) {
-            zero_crossings++;  
-        }
-
-        
-        if (resp[i].gain < resp[min_gain_idx].gain || min_gain_idx == -1) {
-            min_gain_idx = i;
-        }
-        if (resp[i].gain > resp[max_gain_idx].gain || max_gain_idx == -1) {
-            max_gain_idx = i;
-        }
+    // 3. 判断滤波器类型
+    // 低通: 低频通过 & 高频衰减
+    if (low_gain >= threshold && high_gain < threshold) {
+        return "Low-pass";
     }
-
-    
-    if (zero_crossings == 2) {
-        
-        if (resp[max_gain_idx].gain > resp[min_gain_idx].gain) {
-            band_pass = 1; 
-        } else {
-            band_stop = 1;  
-        }
+    // 高通: 低频衰减 & 高频通过
+    if (low_gain < threshold && high_gain >= threshold) {
+        return "High-pass";
     }
-
-
-    if (zero_crossings == 0) {
-        
-        if (resp[n-1].gain > mid) {
-            return "Low-pass";  
-        } else {
-            return "High-pass";  
-        }
-    } else if (zero_crossings == 1) {
-        
-        if (resp[n-1].gain > mid) {
-            return "Low-pass"; 
-        } else {
-            return "High-pass";  
-        }
-    } else if (band_pass) {
-        return "Band-pass";  
-    } else if (band_stop) {
-        return "Band-stop";  
+    // 带通: 两端均衰减 → 中间必有通过（因max_gain≥threshold）
+    if (low_gain < threshold && high_gain < threshold) {
+        return "Band-pass";
     }
-
-    return "Unknown";
+    // 带阻: 两端均通过 & 中间存在衰减点
+    if (low_gain >= threshold && high_gain >= threshold) {
+        for (int i = 0; i < n; i++) {
+            if (resp[i].gain < threshold) {
+                return "Band-stop"; // 发现衰减点 → 带阻
+            }
+        }
+        // 无衰减点 → 全通（非预期，按默认处理）
+    }
+    return "low-stop";
 }
-
 
 
 

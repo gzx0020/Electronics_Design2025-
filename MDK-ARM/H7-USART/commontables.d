@@ -1,0 +1,14 @@
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Source\CommonTables\CommonTables.c
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Source\CommonTables\arm_common_tables.c
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Include\arm_math.h
+h7-usart\commontables.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
+h7-usart\commontables.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+h7-usart\commontables.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+h7-usart\commontables.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
+h7-usart\commontables.o: D:\Keil5\ARM\ARMCC\Bin\..\include\math.h
+h7-usart\commontables.o: D:\Keil5\ARM\ARMCC\Bin\..\include\float.h
+h7-usart\commontables.o: D:\Keil5\ARM\ARMCC\Bin\..\include\limits.h
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Include\arm_common_tables.h
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Source\CommonTables\arm_const_structs.c
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Include\arm_const_structs.h
+h7-usart\commontables.o: E:\bai\Documents\Arm\Parks\ARM\CMSIS\5.7.0\CMSIS\DSP\Source\CommonTables\arm_mve_tables.c

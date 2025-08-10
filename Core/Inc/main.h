@@ -46,7 +46,9 @@ typedef enum {
 } SystemState;
 
 extern SystemState currentState;
-
+extern uint8_t dataReady;
+extern volatile uint8_t learningComplete;
+extern uint16_t currentFreq;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
